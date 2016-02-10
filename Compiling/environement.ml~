@@ -66,6 +66,7 @@ class environement =
 
     let verify_methods  = function
       | x -> (if not (List.mem x list_name_method) then (class_data.def_methods <- x::class_data.def_methods ;))
+     (* | _ -> () *)
     in
 
     List.map verify_methods parent_class.def_methods; 
