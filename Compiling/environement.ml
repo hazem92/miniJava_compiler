@@ -54,8 +54,15 @@ class environement =
       to the list of this class methods definition
     *)
     let parent_class = Hashtbl.find classes classe.cparent.tid in
-    List.map (fun x -> (class_data.def_methods <- ((cl.id^"_"^x.mname)::class_data.def_methods))) classe.cmethods ;
+    
+    List.map
+    (fun x ->( if not (List.mem (cl.id^"_"^x.mname) class_data.def_methods ) then
+    (class_data.def_methods <- ((cl.id^"_"^x.mname)::class_data.def_methods))
+    else
+    (raise (CompilingError ("in the Class " ^ cl.id ^ " the method "^x.mname^" was declared more than one time")); ) ))
+    classe.cmethods ;
     List.map (fun x -> Hashtbl.add global_methodes (cl.id^"_"^x.mname) x ) classe.cmethods ;
+    
     let method_list = classe.cmethods in
     (* Extract the list of methods names from the list of the methods of the class &
     Add the parent class name as a prefix to each method name in order to simpify the
