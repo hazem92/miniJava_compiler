@@ -7,7 +7,7 @@ open Exceptions
    will be contained in the global_methodes attribute
 *)
 
-type class_data = {def_attributes:(string,string) Hashtbl.t;def_methods:string list ;parent:string}
+type class_data = {mutable def_attributes:(string,string) Hashtbl.t; mutable def_methods:string list ; mutable parent:string}
 type method_data = astmethod
 
 (*Definition of the class environement *)
@@ -40,14 +40,14 @@ class environement =
     raise (CompilingError ("The parent Class of " ^ cl.id ^ " is not known"));
     if (Hashtbl.mem classes cl.id) then
     raise (CompilingError ("Class " ^ cl.id ^ " is already defined"));
-    let class_data = {parent = classe.cparent.tid; def_attributes = Hashtbl.create 0;def_methods = [] } in
+    let class_data = {parent = classe.cparent.tid; def_attributes = Hashtbl.create 0; def_methods = [] } in
 
-      (*print_endline ("nom parent " ^ classe.cparent.tid) ;
+      print_endline ("nom parent " ^ classe.cparent.tid) ;
       print_endline ("nom classe " ^ cl.id );
       print_endline "class added successfully ";
       print_endline "" ;
       print_int (Hashtbl.length classes) ;
-      print_endline "" ;*)
+      print_endline "" ;
 
     (*Adding methods of class to global_methodes
       and verify if parent class methods are not defined and add them
@@ -57,25 +57,30 @@ class environement =
     List.map (fun x -> (cl.id^"_"^x.mname)::class_data.def_methods) classe.cmethods ;
     List.map (fun x -> Hashtbl.add global_methodes (cl.id^"_"^x.mname) x ) classe.cmethods ;
     let method_list = classe.cmethods in
-    List.map (fun x -> classe.cparent.tid^"_"^x.mname) method_list ;
+
+    let list_name_method = [] in
+    let rec method_list_name = function
+    [] -> ()
+    | x :: l -> (classe.cparent.tid^"_"^x.mname)::list_name_method ; method_list_name l in
+    method_list_name method_list ;
+
     let verify_methods x = function
-      | string  -> (if not (List.mem method_list x) then x::class_data.def_methods)
-      | _ -> []
+      | string  -> (if not (List.mem x list_name_method) then (class_data.def_methods <- x::class_data.def_methods ))
+      | _ -> ()
     in
+
     List.map verify_methods parent_class.def_methods;
 
-
-
+    let rec print_list = function
+    [] -> print_string "no"
+    | e::l -> print_string e ; print_string " 55" ; print_list l
+    in
+    print_list parent_class.def_methods ;
 
     Hashtbl.add classes cl.id class_data;
 
 
   |_ -> print_endline "this is not a class" ;
-
-
-
-
-
 
 
   end
