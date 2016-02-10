@@ -54,28 +54,28 @@ class environement =
       to the list of this class methods definition
     *)
     let parent_class = Hashtbl.find classes classe.cparent.tid in
-    List.map (fun x -> (cl.id^"_"^x.mname)::class_data.def_methods) classe.cmethods ;
+    List.map (fun x -> (class_data.def_methods <- ((cl.id^"_"^x.mname)::class_data.def_methods))) classe.cmethods ;
     List.map (fun x -> Hashtbl.add global_methodes (cl.id^"_"^x.mname) x ) classe.cmethods ;
     let method_list = classe.cmethods in
 
     let list_name_method = [] in
     let rec method_list_name = function
-    [] -> ()
-    | x :: l -> (classe.cparent.tid^"_"^x.mname)::list_name_method ; method_list_name l in
+    | [] -> ()
+    | x :: l -> let list_name_method = ((classe.cparent.tid^"_"^x.mname)::list_name_method) in  method_list_name l in
     method_list_name method_list ;
 
     let verify_methods x = function
-      | string  -> (if not (List.mem x list_name_method) then (class_data.def_methods <- x::class_data.def_methods ))
+      | string  -> (if not (List.mem x list_name_method) then (class_data.def_methods <- x::class_data.def_methods ;print_endline"add paret"))
       | _ -> ()
     in
 
     List.map verify_methods parent_class.def_methods;
 
     let rec print_list = function
-    [] -> print_string "no"
-    | e::l -> print_string e ; print_string " 55" ; print_list l
+    [] -> print_string cl.id ; print_endline ""
+    | e::l -> print_string e ; print_endline "" ; print_list l
     in
-    print_list parent_class.def_methods ;
+    print_list class_data.def_methods ;
 
     Hashtbl.add classes cl.id class_data;
 

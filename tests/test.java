@@ -1,6 +1,8 @@
 class A {}
 class B {
   A nikni = new A () ;
-  String r ()  {} 
+  String r ()  {}
 }
-class F extends B {}
+class F extends B {
+  String rr ()  {}
+}
