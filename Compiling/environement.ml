@@ -18,13 +18,13 @@ class environement =
   val classes = (let c = Hashtbl.create 0 in
 
 (*Definition of particular classes *)
-  let object_class = {def_attributes = Hashtbl.create 0; def_methods =  []; parent=""} in
+  let object_class = {def_attributes = Hashtbl.create 0; def_methods =  ["Object_getClass";"Object_equals";"Object_toString"]; parent=""} in
   Hashtbl.add c "Object" object_class;
-  let string_class = {def_attributes = Hashtbl.create 0; def_methods =  []; parent="Object"} in
+  let string_class = {def_attributes = Hashtbl.create 0; def_methods =  ["String_concat";"String_contains";"String_equals";"String_isEmpty";"String_length";"String_split"]; parent="Object"} in
   Hashtbl.add c "String" string_class;
-  let int_class = {def_attributes = Hashtbl.create 0; def_methods =  []; parent="Object"} in
-  Hashtbl.add c "Int" int_class;
-  let boolean_class = {def_attributes = Hashtbl.create 0; def_methods =  []; parent="Object"} in
+  let integer_class = {def_attributes = Hashtbl.create 0; def_methods =  ["Integer_equals";"Integer_toString"]; parent="Object"} in
+  Hashtbl.add c "Integer" integer_class;
+  let boolean_class = {def_attributes = Hashtbl.create 0; def_methods =  ["Boolean_compare";"Boolean_toString"]; parent="Object"} in
   Hashtbl.add c "Boolean" boolean_class;
   c;)
 
@@ -57,8 +57,10 @@ class environement =
     List.map (fun x -> (class_data.def_methods <- ((cl.id^"_"^x.mname)::class_data.def_methods))) classe.cmethods ;
     List.map (fun x -> Hashtbl.add global_methodes (cl.id^"_"^x.mname) x ) classe.cmethods ;
     let method_list = classe.cmethods in
+    (* Extract the list of methods names from the list of the methods of the class &
+    Add the parent class name as a prefix to each method name in order to simpify the
+    test in the 'verify_methods' function *)
 
-    
     let rec method_list_name = function
     | [] -> []
     | x :: l ->(classe.cparent.tid^"_"^x.mname)::(method_list_name l) in
@@ -68,16 +70,16 @@ class environement =
       | x -> (if not (List.mem x list_name_method) then (class_data.def_methods <- x::class_data.def_methods ;))
     in
 
-    List.map verify_methods parent_class.def_methods; 
+    List.map verify_methods parent_class.def_methods;
 
     let rec print_list = function
     [] -> print_string cl.id ; print_endline ""
     | e::l -> print_string e ; print_endline "" ; print_list l
-    in 
+    in
 
 	(*print_string "def methods";
     print_list class_data.def_methods ;
-	
+
 	print_string "list name method";
 	print_newline();
 	print_list list_name_method;*)
