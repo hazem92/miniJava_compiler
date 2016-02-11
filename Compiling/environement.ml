@@ -54,7 +54,7 @@ class environement =
       to the list of this class methods definition
     *)
     let parent_class = Hashtbl.find classes classe.cparent.tid in
-    
+
     List.map
     (fun x ->( if not (List.mem (cl.id^"_"^x.mname) class_data.def_methods ) then
     (class_data.def_methods <- ((cl.id^"_"^x.mname)::class_data.def_methods))
@@ -62,21 +62,53 @@ class environement =
     (raise (CompilingError ("in the Class " ^ cl.id ^ " the method "^x.mname^" was declared more than one time")); ) ))
     classe.cmethods ;
     List.map (fun x -> Hashtbl.add global_methodes (cl.id^"_"^x.mname) x ) classe.cmethods ;
-    
+
     let method_list = classe.cmethods in
     (* Extract the list of methods names from the list of the methods of the class &
     Add the parent class name as a prefix to each method name in order to simpify the
     test in the 'verify_methods' function *)
+
+    let method_remove_parent_name = function
+    | x -> String.sub x ((String.length classe.cparent.tid) + 1) ((String.length x) - (String.length classe.cparent.tid+ 1) )
+    in
 
     let rec method_list_name = function
     | [] -> []
     | x :: l ->(classe.cparent.tid^"_"^x.mname)::(method_list_name l) in
     let list_name_method = method_list_name method_list in
 
-    let verify_methods  = function
-      | x -> (if not (List.mem x list_name_method) then (class_data.def_methods <- x::class_data.def_methods ;))
+    (*add the methods of parent class to the list of methods of this class
+    and checks in case of redifinition that parnt class and this class has the same return type
+    and argument list *)
+
+    let rec compare_args_list_types = function
+    | [],[] -> true
+    | _,[] -> false
+    | [],_ -> false
+    | l1,l2 -> let (l11,l12) = List.partition (fun x -> ( x.ptype = (List.hd l1).ptype ) ) l1 in
+               let (l21,l22) = List.partition (fun x -> ( x.ptype = (List.hd l1).ptype ) ) l2 in
+                if not (List.length l11 = List.length l11) then
+                  false
+                else
+                compare_args_list_types (l12,l22) ;
     in
 
+    let verify_methods  = function
+      | x ->
+      (if not (List.mem x list_name_method) then
+       (class_data.def_methods <- x::class_data.def_methods ;) else
+       (if not (
+         (*we compare the definition of methods in global_methodes : same return *)
+         ((Hashtbl.find global_methodes x).mreturntype =
+            ((Hashtbl.find global_methodes (cl.id^"_"^(method_remove_parent_name x))).mreturntype))
+         &&
+         (*we compare the definition of methods in global_methodes : same arg list types *)
+         (compare_args_list_types (((Hashtbl.find global_methodes x).margstype),
+              ((Hashtbl.find global_methodes (cl.id^"_"^(method_remove_parent_name x))).margstype)))
+         ) then
+       (raise (CompilingError ("Incorrect redifinition of the method " ^ method_remove_parent_name x));)
+       ))
+    in
     List.map verify_methods parent_class.def_methods;
 
     let rec print_list = function

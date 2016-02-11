@@ -1,16 +1,8 @@
-class A {
-	void m() {}
-	int i(){}
-}
 
-class B extends A {
-	String b() {}
-	int i(){}
-	}
-/*class B {
+class B {
   A nikni = new A () ;
-  String r ()  {}
+  String r (int a, String b)  {}
 }
 class F extends B {
-  String rr ()  {}
-} */
+  String r (String d,int a)  {}
+}
