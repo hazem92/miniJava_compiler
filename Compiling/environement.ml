@@ -9,6 +9,7 @@ open Exceptions
 
 type class_data = {mutable def_attributes:(string,string) Hashtbl.t; mutable def_methods:string list ; mutable parent:string}
 type method_data = astmethod
+type scope_Hashtbl_contenant = {_type:string; mutable _value : astattribute}
 
 (*Definition of the class environement *)
 class environement =
@@ -28,13 +29,54 @@ class environement =
   Hashtbl.add c "Boolean" boolean_class;
   c;)
 
+(* begin Definition of scope and useful methods*)
+
+(* scopes are a list of Hashtbl*)
+val mutable scopes : ((string,scope_Hashtbl_contenant) Hashtbl.t) list = [Hashtbl.create 0] ;
+val main_class = {parent = "Object"; def_attributes = Hashtbl.create 0; def_methods = [] } ;
+
+method local_scope =
+  if ((List.length scopes) > 1) then
+    List.hd scopes
+  else
+    raise (RunTimeError("Something went wrong with scopes"))
+method clear_scopes =
+  (*assert (List.length scopes == 1);*)
+  scopes <- [Hashtbl.create 0]
+method create_new_scope =
+  scopes <- (Hashtbl.create 0) :: scopes
+method exit_scope =
+  (*assert ((List.length scopes) > 1);*)
+  scopes <- List.tl scopes
+
+method add_attribute_to_local_scope (a:astattribute) =
+  if Hashtbl.mem self#local_scope a.aname then
+	   raise (CompilingError ("Variable " ^ a.aname ^ " already declared in local scope"))
+	else
+	  () (*Hashtbl.add self#local_scope a.aname {_type = (Typing.string_to_type a._type); _value = NoValue}*)
+method add_constant_to_local_scope (c:astconst) =
+  if Hashtbl.mem self#local_scope c.cname then
+    raise (CompilingError ("Constant " ^ c.cname ^ " already declared in local scope"))
+  else
+    () (*Hashtbl.add self#local_scope v.name {_type = (Typing.string_to_type v._type); value = NoValue}*)
+method add_arg_to_local_scope (a:argument) =
+  if Hashtbl.mem self#local_scope a.pident then
+    raise (CompilingError ("Param " ^ a.pident ^ " already declared in local scope"))
+  else
+    () (*Hashtbl.add self#local_scope v.pident {_type = (Typing.string_to_type v._type); value = NoValue}*)
+(*method match_param_to_arg*)
+
+
+
+(*end*)
+
 (*avoid having interface instance +++todo+++ *)
 (*  Compiling Class.. adding class to the enviroment
     Check if Parent is defined and no other class is defined having the same name
     Building the table of methods
  *)
 
-  method add_class (cl : asttype ) =     match cl.info with
+  method add_class (cl : asttype)  =     match cl.info with
   |Class classe ->
     if ( not (Hashtbl.mem classes classe.cparent.tid)) then
     raise (CompilingError ("The parent Class of " ^ cl.id ^ " is not known"));
