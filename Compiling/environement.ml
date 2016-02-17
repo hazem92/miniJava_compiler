@@ -9,10 +9,10 @@ open Exceptions
 
 type class_data = {mutable def_attributes:(string,AST.expression) Hashtbl.t; mutable def_methods:string list ; mutable parent:string}
 type method_data = astmethod
-type scope_Hashtbl_contenant = {_type:string; mutable _value : astattribute}
+type scope_Hashtbl_contenant = {mutable _value : Execute.value}
 (*tas*)
-type tObject = {oclass:string; attributes:(string,AST.expression) Hashtbl.t}
-type ttas = (string,tObject) Hashtbl.t
+type tObject = {_name:string;_class:string; attributes:(string,AST.expression) Hashtbl.t}
+type ttas = (int,tObject) Hashtbl.t
 
 (*Definition of the class environement *)
 class environement =
@@ -195,12 +195,12 @@ method add_arg_to_local_scope (a:argument) =
   |_ -> print_endline "this is not a class" ;
 
   (* Add object to tas *)
-  method add_object oname oclass =
+  method add_object oname oclass index =
     try
       let c = Hashtbl.find classes oclass in
       let attrs = c.def_attributes in
-      let tob = {oclass = oclass; attributes = attrs } in
-      Hashtbl.add tas oname tob
+      let tob = {_name = oname;_class = oclass; attributes = attrs } in
+      Hashtbl.add tas index tob
 
     with Not_found -> raise (CompilingError ("Unrecognized type"))
 
