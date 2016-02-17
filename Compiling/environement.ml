@@ -11,7 +11,7 @@ type class_data = {mutable def_attributes:(string,AST.expression) Hashtbl.t; mut
 type method_data = astmethod
 type scope_Hashtbl_contenant = {_type:string; mutable _value : astattribute}
 (*tas*)
-type tObject = {oclass:string; attributes:(string,AST.value) Hashtbl.t}
+type tObject = {oclass:string; attributes:(string,AST.expression) Hashtbl.t}
 type ttas = (string,tObject) Hashtbl.t
 
 (*Definition of the class environement *)
@@ -195,11 +195,15 @@ method add_arg_to_local_scope (a:argument) =
   |_ -> print_endline "this is not a class" ;
 
   (* Add object to tas *)
-  (*method add_object oname oclass =
+  method add_object oname oclass =
     try
-      let c = Hashtbl.find classes oclass;
+      let c = Hashtbl.find classes oclass in
+      let attrs = c.def_attributes in
+      let tob = {oclass = oclass; attributes = attrs } in
+      Hashtbl.add tas oname tob
+
     with Not_found -> raise (CompilingError ("Unrecognized type"))
-*)
+
 
 
   end
