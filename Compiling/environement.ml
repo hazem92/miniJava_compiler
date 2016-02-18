@@ -30,7 +30,7 @@ class environement =
 
   val global_methodes = Hashtbl.create 0 ;
   val tas:ttas = Hashtbl.create 0;
-  val classes = (let c = Hashtbl.create 0 in
+  val  classes = (let c = Hashtbl.create 0 in
 
 (*Definition of particular classes *)
   let object_class = {def_attributes = Hashtbl.create 0; def_methods =  ["Object_getClass";"Object_equals";"Object_toString"]; parent=""} in
@@ -49,6 +49,12 @@ class environement =
 val mutable scopes : ((string,scope_Hashtbl_contenant) Hashtbl.t) list = [Hashtbl.create 0] ;
 val main_class = {parent = "Object"; def_attributes = Hashtbl.create 0; def_methods = [] } ;
 
+method get_classes =
+	classes
+method get_tas =
+	tas
+method add_obj_in_tas (obj:tObject)=
+	Hashtbl.add tas ((Hashtbl.length tas) +1) obj 
 method local_scope =
   if ((List.length scopes) > 1) then
     List.hd scopes
