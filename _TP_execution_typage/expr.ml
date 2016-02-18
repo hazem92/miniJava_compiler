@@ -2,7 +2,7 @@ type binop =
   | Badd | Bsub | Bmul | Bdiv | Bmod
   | Band | Bor
   | Bgt | Bge | Blt | Ble | Beq | Bneq
-				    
+
 type unop =
   | Unot | Uminus
 
@@ -17,10 +17,10 @@ type expression =
 type value =
   | Vbool of bool
   | Vint of int
-		     
+
 exception Unbound_variable of string
 
-let get_op_u op x = 
+let get_op_u op x =
   match op, x with
   | Unot, Vbool b -> Vbool(not b)
   | Uminus, Vint x -> Vint (-x)
@@ -96,14 +96,14 @@ let rec string_of_expr exp =
   | Int i -> string_of_int i
   | Var v -> v
   | Def(v, e1, e2) -> v^"="^(string_of_expr e1)^" in "^(string_of_expr e2)
-  | Binop(op, e1, e2) -> 
+  | Binop(op, e1, e2) ->
       "("^(string_of_expr e1)^(string_of_op_b op)^(string_of_expr e2)^")"
   | Unop(op, e) -> "("^(string_of_op_u op)^(string_of_expr e)^")"
 
 type typ = Tbool | Tint
 exception Wrong_types_bop of binop * typ * typ
 exception Wrong_types_uop of unop * typ
-								    
+
 let get_op_b_type op x y =
   match op, x, y with
   | Badd, Tint, Tint
@@ -121,7 +121,7 @@ let get_op_b_type op x y =
   | Bor, Tbool, Tbool -> Tbool
   | _ -> raise(Wrong_types_bop(op,x,y))
 
-let get_op_u_type op x = 
+let get_op_u_type op x =
   match op, x with
   | Unot, Tbool -> Tbool
   | Uminus, Tint -> Tint
@@ -143,6 +143,6 @@ let rec typing env exp =
      let t1 = typing env e1 in
      let t2 = typing env e2 in
      get_op_b_type op t1 t2
-  | Unop(op,e) -> 
+  | Unop(op,e) ->
      let t = typing env e in
      get_op_u_type op t
