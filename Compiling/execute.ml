@@ -118,7 +118,9 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
   (*case Attr and Name*)
   | Attr (x,y) -> (match x.edesc with Name s -> env#get_att_value_from_tas s y)
   | Name (s) -> ( if (Hashtbl.mem env#local_scope s) then (
-                Hashtbl.find env#local_scope s ) else (
+                let v=Hashtbl.find env#local_scope s in
+                v._value
+                 ) else (
                 raise (RunTimeError ("this object "^s^" was not declared in this scope"))
                   )
                 )
