@@ -2,15 +2,6 @@ open AST
 open Environement
 open Exceptions
 
-type value =
-	| NullValue
-	| IntValue of int
-	| FloatValue of float
-	| StringValue of string
-	| BoolValue of bool
-  | CharValue of char
-	| ClassValue of int
-	| NoValue
 
 (*add class definition to enviroment from ast *)
 let rec gather_toplevel l env = match l with
@@ -77,23 +68,12 @@ let get_prefix_op op x =
 (*get assign_op*)
 let get_assign_op op x y env =
 	match op x y  with
-	| Assign, Name x, NullValue -> (
-		if (Hashtbl.mem env#local_scope x) then (
-			Hashtbl.replace env#local_scope x {_value= NullValue}  ) else (
-				raise (RunTimeError ("this variable "^s^" was not declared in this scope"))
-			)
-		)
-	| Assign, Name x, IntValue y 
-	| Assign, Name x, FloatValue y
-	| Assign, Name x, StringValue y
-	| Assign, Name x, BoolValue y
-	| Assign, Name x, CharValue y
-	-> (
-		if (Hashtbl.mem env#local_scope x) then (
-			Hashtbl.replace env#local_scope x {_value= y}  ) else (
-				raise (RunTimeError ("this variable "^s^" was not declared in this scope"))
-			)
-		)
+	| Assign, Name x, NullValue -> env#update_var_in_local_scope x NullValue
+	| Assign, Name x, IntValue y -> env#update_var_in_local_scope x (IntValue y)
+	| Assign, Name x, FloatValue y -> env#update_var_in_local_scope x ( FloatValue y)
+	| Assign, Name x, StringValue y -> env#update_var_in_local_scope x ( StringValue y)
+	| Assign, Name x, BoolValue y -> env#update_var_in_local_scope x ( BoolValue y )
+	| Assign, Name x, CharValue y -> env#update_var_in_local_scope x ( CharValue y)
 (*
 	| Ass_add
 	| Ass_sub

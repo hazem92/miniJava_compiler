@@ -21,7 +21,7 @@ type class_data = {mutable def_attributes:(string,AST.expression) Hashtbl.t; mut
 type method_data = astmethod
 type scope_Hashtbl_contenant = {mutable _value : value}
 (*tas*)
-type tObject = {_name:string;_class:string; attributes:(string,AST.expression) Hashtbl.t}
+type tObject = {_name:string;_class:string; attributes:(string, value) Hashtbl.t}
 type ttas = (int,tObject) Hashtbl.t
 
 (*Definition of the class environement *)
@@ -80,11 +80,25 @@ method add_arg_to_local_scope (a:argument) =
     () (*Hashtbl.add self#local_scope v.pident {_type = (Typing.string_to_type v._type); value = NoValue}*)
 (*method match_param_to_arg*)
 
-method update_var_in_local_scope s:string v:value =
-  if (Hashtbl.mem env#local_scope s) then (
-    Hashtbl.replace env#local_scope s {_value= v}  ) else (
-    raise (RunTimeError ("this variable "^s^" was not declared in this scope"))
+method update_var_in_local_scope (s:string) (v:value) =
+  if (Hashtbl.mem self#local_scope s) then (
+    Hashtbl.replace self#local_scope s {_value= v}  ) else (
+    raise (RunTimeError ("this variable "^s^" was not declared in this scope")) )
 
+method update_att_in_tas (n:string) (s:string) (v:value) =
+  if (Hashtbl.mem self#local_scope n) then (
+    let tmp_i = Hashtbl.find self#local_scope n in
+      match tmp_i._value with
+      | ClassValue i -> (
+        let tmp_ob = Hashtbl.find tas i in
+        if (Hashtbl.mem tmp_ob.attributes s) then (
+          Hashtbl.replace tmp_ob.attributes s v ) else (
+            raise (RunTimeError ("this object "^n^" does not have attribute "^s))))
+     | _ -> raise (RunTimeError ("something not cool happened"))
+     )
+  else (
+    raise (RunTimeError ("this object "^n^" was not declared in this scope"))
+    )
 
 (*end*)
 
@@ -94,7 +108,7 @@ method update_var_in_local_scope s:string v:value =
     Building the table of methods
  *)
 
-  method add_class (cl : asttype)  =     match cl.info with
+  method add_class (cl : asttype)  =  match cl.info with
   |Class classe ->
     if ( not (Hashtbl.mem classes classe.cparent.tid)) then
     raise (CompilingError ("The parent Class of " ^ cl.id ^ " is not known"));
@@ -209,14 +223,14 @@ method update_var_in_local_scope s:string v:value =
   |_ -> print_endline "this is not a class" ;
 
   (* Add object to tas *)
-  method add_object oname oclass index =
+(*  method add_object oname oclass index =
     try
       let c = Hashtbl.find classes oclass in
       let attrs = c.def_attributes in
       let tob = {_name = oname;_class = oclass; attributes = attrs } in
       Hashtbl.add tas index tob
 
-    with Not_found -> raise (CompilingError ("Unrecognized type"))
+    with Not_found -> raise (CompilingError ("Unrecognized type")) *)
 
 
 
