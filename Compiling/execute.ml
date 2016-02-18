@@ -75,14 +75,13 @@ let get_assign_op op x y env =
 	| Assign, Name x, StringValue y -> env#update_var_in_local_scope x ( StringValue y)
 	| Assign, Name x, BoolValue y -> env#update_var_in_local_scope x ( BoolValue y )
 	| Assign, Name x, CharValue y -> env#update_var_in_local_scope x ( CharValue y)
-  | Assign, Name x, ClassValue y -> env#update_object_in_tas x ( ClassValue y)
-  | Assign, Attr (x,z), NullValue -> env#update_att_in_tas x.edesc z NullValue
-	| Assign, Attr (x,z), IntValue y -> env#update_att_in_tas x.edesc z (IntValue y)
-	| Assign, Attr (x,z), FloatValue y -> env#update_att_in_tas x.edesc z ( FloatValue y)
-	| Assign, Attr (x,z), StringValue y -> env#update_att_in_tas x.edesc z ( StringValue y)
-	| Assign, Attr (x,z), BoolValue y -> env#update_att_in_tas x.edesc z ( BoolValue y )
-	| Assign, Attr (x,z), CharValue y -> env#update_att_in_tas x.edesc z ( CharValue y)
-  | Assign, Attr (x,z), ClassValue y -> env#update_att_in_tas x.edesc z ( ClassValue y)
+  | Assign, Name x, ClassValue y -> env#update_object_in_tas x y
+  | Assign, Attr (x,z), NullValue -> (match x.edesc with Name s -> (env#update_att_in_tas s z NullValue));
+	| Assign, Attr (x,z), IntValue y ->(match x.edesc with Name s-> (env#update_att_in_tas s z (IntValue y)))
+	| Assign, Attr (x,z), FloatValue y ->(match x.edesc with Name s-> (env#update_att_in_tas s z ( FloatValue y)))
+	| Assign, Attr (x,z), StringValue y ->(match x.edesc with Name s-> (env#update_att_in_tas s z ( StringValue y)))
+	| Assign, Attr (x,z), BoolValue y ->(match x.edesc with Name s-> (env#update_att_in_tas s z ( BoolValue y)))
+  | Assign, Attr (x,z), ClassValue y ->(match x.edesc with Name s-> (env#update_att_in_tas s z ( ClassValue y)))
 (*
 	| Ass_add
 	| Ass_sub
@@ -115,9 +114,9 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
 	| Post (e,op) -> ( get_postfix_op op ) (eval e.edesc env)
   | Pre (op,e) -> ( get_prefix_op op ) (eval e.edesc env)
 	(*case Assign *)
-  | AssignExp (e1,op,e2) -> (get_assign_op op) e1.edesc (eval e2.edesc env) env
+  | AssignExp (e1,op,e2) -> (get_assign_op op) e1.edesc (eval e2.edesc env) env; NoValue;
   (*case Attr and Name*)
-  | Attr (x,y) -> env#get_att_value_from_tas x y
+  | Attr (x,y) -> (match x.edesc with Name s -> env#get_att_value_from_tas s y)
   | Name (s) -> ( if (Hashtbl.mem env#local_scope s) then (
                 Hashtbl.find env#local_scope s ) else (
                 raise (RunTimeError ("this object "^s^" was not declared in this scope"))
