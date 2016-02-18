@@ -7,15 +7,19 @@ open Exceptions
    will be contained in the global_methodes attribute
 *)
 
-type class_data = {mutable def_attributes:(string,string) Hashtbl.t; mutable def_methods:string list ; mutable parent:string}
+type class_data = {mutable def_attributes:(string,AST.expression) Hashtbl.t; mutable def_methods:string list ; mutable parent:string}
 type method_data = astmethod
-type scope_Hashtbl_contenant = {_type:string; mutable _value : astattribute}
+type scope_Hashtbl_contenant = {mutable _value : Execute.value}
+(*tas*)
+type tObject = {_name:string;_class:string; attributes:(string,AST.expression) Hashtbl.t}
+type ttas = (int,tObject) Hashtbl.t
 
 (*Definition of the class environement *)
 class environement =
   object (self)
 
   val global_methodes = Hashtbl.create 0 ;
+  val tas:ttas = Hashtbl.create 0;
   val classes = (let c = Hashtbl.create 0 in
 
 (*Definition of particular classes *)
@@ -153,10 +157,30 @@ method add_arg_to_local_scope (a:argument) =
     in
     List.map verify_methods parent_class.def_methods;
 
-    let rec print_list = function
+    (*let rec print_list = function
     [] -> print_string cl.id ; print_endline ""
     | e::l -> print_string e ; print_endline "" ; print_list l
+    in*)
+    let rec add_attributes =function
+      | [] -> ()
+      | att::l -> match att.adefault with
+        | Some e -> Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
+        | None -> match att.atype with
+            | Primitive(Int) ->
+              let e = { edesc = Val(Int("0"))} in
+              Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
+            | Primitive(Boolean) ->
+              let e = { edesc = Val(Boolean(false))} in
+              Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
+            | Primitive(Float) ->
+              let e = { edesc = Val(Float("0"))} in
+              Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
+            | Ref (ref) ->
+              let e = { edesc = Val(Null)} in
+              Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
+            | _ -> raise (CompilingError ("Unrecognized type"))
     in
+    add_attributes classe.cattributes;
 
 	(*print_string "def methods";
     print_list class_data.def_methods ;
@@ -169,6 +193,17 @@ method add_arg_to_local_scope (a:argument) =
 
 
   |_ -> print_endline "this is not a class" ;
+
+  (* Add object to tas *)
+  method add_object oname oclass index =
+    try
+      let c = Hashtbl.find classes oclass in
+      let attrs = c.def_attributes in
+      let tob = {_name = oname;_class = oclass; attributes = attrs } in
+      Hashtbl.add tas index tob
+
+    with Not_found -> raise (CompilingError ("Unrecognized type"))
+
 
 
   end
