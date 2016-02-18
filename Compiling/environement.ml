@@ -6,10 +6,20 @@ open Exceptions
    Class will have a list of string of its defined methods, the implementation of these methods
    will be contained in the global_methodes attribute
 *)
+(* Definition of the value type after execution *)
+type value =
+	| NullValue
+	| IntValue of int
+	| FloatValue of float
+	| StringValue of string
+	| BoolValue of bool
+  | CharValue of char
+	| ClassValue of int
+	| NoValue
 
 type class_data = {mutable def_attributes:(string,AST.expression) Hashtbl.t; mutable def_methods:string list ; mutable parent:string}
 type method_data = astmethod
-type scope_Hashtbl_contenant = {mutable _value : Execute.value}
+type scope_Hashtbl_contenant = {mutable _value : value}
 (*tas*)
 type tObject = {_name:string;_class:string; attributes:(string,AST.expression) Hashtbl.t}
 type ttas = (int,tObject) Hashtbl.t
@@ -70,6 +80,10 @@ method add_arg_to_local_scope (a:argument) =
     () (*Hashtbl.add self#local_scope v.pident {_type = (Typing.string_to_type v._type); value = NoValue}*)
 (*method match_param_to_arg*)
 
+method update_var_in_local_scope s:string v:value =
+  if (Hashtbl.mem env#local_scope s) then (
+    Hashtbl.replace env#local_scope s {_value= v}  ) else (
+    raise (RunTimeError ("this variable "^s^" was not declared in this scope"))
 
 
 (*end*)
