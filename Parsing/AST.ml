@@ -64,13 +64,13 @@ type expression_desc =
   | New of string option * string list * expression list
   | NewArray of Type.t * (expression option) list * expression option
   | Call of expression option * string * expression list
-  | Attr of expression * string
+  | Attr of expression * string (**)
   | If of expression * expression * expression
   | Val of value (**)
-  | Name of string
+  | Name of string (**)
   | ArrayInit of expression list
   | Array of expression * (expression option) list
-  | AssignExp of expression * assign_op * expression
+  | AssignExp of expression * assign_op * expression (**)
   | Post of expression * postfix_op (**)
   | Pre of prefix_op * expression  (**)
   | Op of expression * infix_op * expression (**)

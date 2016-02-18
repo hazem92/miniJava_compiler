@@ -46,7 +46,7 @@ let get_infix_op op x y =
 	| Op_xor,_,_ -> raise (RunTimeError (" Op_xor is not yet supported "))
 	| Op_shr,_,_ -> raise (RunTimeError (" Op_shr is not yet supported "))
 	| Op_shrr,_,_ -> raise (RunTimeError (" Op_shrr is not yet supported "))
-  | _ -> failwith "bug:type error not catched"
+  | _ -> failwith "bug in get_infix_op : type error not catched"
 
 	(* get postfix_op *)
 let get_postfix_op op x  =
@@ -64,16 +64,25 @@ let get_prefix_op op x =
 	| Op_decr,IntValue x -> IntValue (x-1)
 	| Op_bnot,_ -> raise (RunTimeError (" Op_bnot is not yet supported "))
 	| Op_plus,_ -> raise (RunTimeError (" Op_plus is not yet supported "))
+  | _ -> failwith "bug in get_prefix_op : type error not catched"
 
 (*get assign_op*)
 let get_assign_op op x y env =
-	match op x y  with
+	match op, x, y  with
 	| Assign, Name x, NullValue -> env#update_var_in_local_scope x NullValue
 	| Assign, Name x, IntValue y -> env#update_var_in_local_scope x (IntValue y)
 	| Assign, Name x, FloatValue y -> env#update_var_in_local_scope x ( FloatValue y)
 	| Assign, Name x, StringValue y -> env#update_var_in_local_scope x ( StringValue y)
 	| Assign, Name x, BoolValue y -> env#update_var_in_local_scope x ( BoolValue y )
 	| Assign, Name x, CharValue y -> env#update_var_in_local_scope x ( CharValue y)
+  | Assign, Name x, ClassValue y -> env#update_object_in_tas x ( ClassValue y)
+  | Assign, Attr (x,z), NullValue -> env#update_att_in_tas x.edesc z NullValue
+	| Assign, Attr (x,z), IntValue y -> env#update_att_in_tas x.edesc z (IntValue y)
+	| Assign, Attr (x,z), FloatValue y -> env#update_att_in_tas x.edesc z ( FloatValue y)
+	| Assign, Attr (x,z), StringValue y -> env#update_att_in_tas x.edesc z ( StringValue y)
+	| Assign, Attr (x,z), BoolValue y -> env#update_att_in_tas x.edesc z ( BoolValue y )
+	| Assign, Attr (x,z), CharValue y -> env#update_att_in_tas x.edesc z ( CharValue y)
+  | Assign, Attr (x,z), ClassValue y -> env#update_att_in_tas x.edesc z ( ClassValue y)
 (*
 	| Ass_add
 	| Ass_sub
@@ -86,9 +95,10 @@ let get_assign_op op x y env =
 	| Ass_and
 	| Ass_xor
 	| Ass_or *)
+  | _ -> failwith "bug in get_assign_op : type error not catched"
 
 (*Eval experssions*)
-let rec eval (exp:expression_desc) env = match exp with
+let rec eval (exp:expression_desc) (env:environement) = match exp with
 	(* case Val *)
 	| Val (v) -> ( match v with
   	| String (s) -> IntValue (int_of_string s)
@@ -99,9 +109,30 @@ let rec eval (exp:expression_desc) env = match exp with
 							 	| Some c -> CharValue (c) )
   	| Boolean (s) -> BoolValue (s)
   	| Null  -> NullValue )
-	(* case Op *)
+  (* case Op *)
 	| Op (e1,op,e2) -> (get_infix_op op) (eval e1.edesc env) (eval e2.edesc env)
 	(*case Post and Pre*)
 	| Post (e,op) -> ( get_postfix_op op ) (eval e.edesc env)
   | Pre (op,e) -> ( get_prefix_op op ) (eval e.edesc env)
-	(*case New*)
+	(*case Assign *)
+  | AssignExp (e1,op,e2) -> (get_assign_op op) e1.edesc (eval e2.edesc env) env
+  (*case Attr and Name*)
+  | Attr (x,y) -> env#get_att_value_from_tas x y
+  | Name (s) -> ( if (Hashtbl.mem env#local_scope s) then (
+                Hashtbl.find env#local_scope s ) else (
+                raise (RunTimeError ("this object "^s^" was not declared in this scope"))
+                  )
+                )
+  (*case New*)
+  | New (None,n,al) -> (
+    let name = List.nth n ((List.length n) -1) in
+    if not (Hashtbl.mem (env.classes) name ) then
+      raise (RunTimeError ("this Class "^name^" was not defined")) ;
+    let c = Hashtbl.find env.classes name in
+    let attrs = c.def_attributes in
+    let attributes:(string,Environement.value) Hashtbl.t= Hashtbl.create 0 in
+    let f = fun x y -> Hashtbl.add x (eval y env)  in
+    Hashtbl.iter f attrs;
+    let tob = {_name = "default";_class = name; attributes = attributes } in
+    Hashtbl.add env.tas ((Hashtbl.length env.tas) +1) tob
+    ClassValue ( Hashtbl.length env.tas ) )

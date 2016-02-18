@@ -21,7 +21,7 @@ type class_data = {mutable def_attributes:(string,AST.expression) Hashtbl.t; mut
 type method_data = astmethod
 type scope_Hashtbl_contenant = {mutable _value : value}
 (*tas*)
-type tObject = {_name:string;_class:string; attributes:(string, value) Hashtbl.t}
+type tObject = {_name:string;_class:string; mutable attributes:(string, value) Hashtbl.t}
 type ttas = (int,tObject) Hashtbl.t
 
 (*Definition of the class environement *)
@@ -92,13 +92,57 @@ method update_att_in_tas (n:string) (s:string) (v:value) =
       | ClassValue i -> (
         let tmp_ob = Hashtbl.find tas i in
         if (Hashtbl.mem tmp_ob.attributes s) then (
-          Hashtbl.replace tmp_ob.attributes s v ) else (
+					(* Depending on type of v if it's a primitive we replace, if it's ClassValue
+					 we make a copy of attributes between the attribute object and the attributes
+					 of object whose int (ref) in tas was passed in parameter value *)
+					 match v with
+					  	| ClassValue a -> (
+								 let tmp_v = Hashtbl.find tmp_ob.attributes s in
+								 match tmp_v with
+ 										| ClassValue j -> (
+ 											let obj_start = Hashtbl.find tas j in
+ 											let obj_end = Hashtbl.find tas a in
+ 											obj_start.attributes <- obj_end.attributes
+ 									)
+ 								| _ -> raise (RunTimeError ("something not cool happened"))
+								)
+							| _ ->	Hashtbl.replace tmp_ob.attributes s v
+           ) else (
             raise (RunTimeError ("this object "^n^" does not have attribute "^s))))
      | _ -> raise (RunTimeError ("something not cool happened"))
      )
   else (
     raise (RunTimeError ("this object "^n^" was not declared in this scope"))
     )
+
+method get_att_value_from_tas (n:string) (s:string)  =
+  if (Hashtbl.mem self#local_scope n) then (
+    let tmp_i = Hashtbl.find self#local_scope n in
+      match tmp_i._value with
+      | ClassValue i -> (
+        let tmp_ob = Hashtbl.find tas i in
+        if (Hashtbl.mem tmp_ob.attributes s) then (
+          	Hashtbl.find tmp_ob.attributes s  ) else (
+            raise (RunTimeError ("this object "^n^" does not have attribute "^s))))
+     | _ -> raise (RunTimeError ("something not cool happened"))
+     )
+  else (
+    raise (RunTimeError ("this object "^n^" was not declared in this scope"))
+    )
+
+method update_object_in_tas (s:string) (n:int) =
+	if (Hashtbl.mem self#local_scope s) then (
+		let tmp_s = Hashtbl.find self#local_scope s in
+		match tmp_s._value with
+		| ClassValue i -> (
+			let obj_start = Hashtbl.find tas n in
+			let obj_end = Hashtbl.find tas n in
+			obj_start.attributes <- obj_end.attributes
+			)
+		| _ -> raise (RunTimeError ("something not cool happened"))
+		)
+		else (
+			raise (RunTimeError ("this object "^s^" was not declared in this scope")))
 
 (*end*)
 
@@ -221,17 +265,5 @@ method update_att_in_tas (n:string) (s:string) (v:value) =
 
 
   |_ -> print_endline "this is not a class" ;
-
-  (* Add object to tas *)
-(*  method add_object oname oclass index =
-    try
-      let c = Hashtbl.find classes oclass in
-      let attrs = c.def_attributes in
-      let tob = {_name = oname;_class = oclass; attributes = attrs } in
-      Hashtbl.add tas index tob
-
-    with Not_found -> raise (CompilingError ("Unrecognized type")) *)
-
-
 
   end
