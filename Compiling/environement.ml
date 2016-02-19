@@ -273,23 +273,21 @@ method update_object_in_tas (s:string) (n:int) =
               Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
             | _ -> raise (CompilingError ("Unrecognized type"))
     in
-    add_attributes classe.cattributes;
+    	add_attributes classe.cattributes;
 
-	(*print_string "def methods";
-    print_list class_data.def_methods ;
+			(*print_string "def methods";
+    	print_list class_data.def_methods ;
 
-	print_string "list name method";
-	print_newline();
-	print_list list_name_method;*)
+			print_string "list name method";
+			print_newline();
+			print_list list_name_method;*)
 
-    Hashtbl.add classes cl.id class_data;
-
+    	Hashtbl.add classes cl.id class_data;
 
   |_ -> print_endline "this is not a class" ;
 
-(* STRING OF *)
-	method string_of_tas =
-	let string_of_value v = match v with
+	(* STRING OF Value *)
+	method string_of_value v = match v with
 		| NullValue -> "Null"
 		| IntValue i -> string_of_int i
 		| FloatValue f -> string_of_float f
@@ -297,24 +295,34 @@ method update_object_in_tas (s:string) (n:int) =
 		| BoolValue b -> string_of_bool b
 		| CharValue c -> let string_of_char = String.make 1 in string_of_char c
 		| ClassValue r -> "reference to "^ (string_of_int r)
-		| NoValue -> "no value" ; in
-		(* method that converts Hashtbl of attributes of a tObject into string *)
-	 let string_of_attributes h =
-	 	let list_of_attributes = [] in
-		let f = fun key value -> (key^" : "^string_of_value value)::list_of_attributes;() in
+		| NoValue -> "no value"
+
+	(*Print tas*)
+	method  string_of_tas =
+	(* method that converts Hashtbl of attributes of a tObject into string *)
+	let string_of_attributes h =
+ 		let list_of_attributes = [] in
+		let f = (fun key value -> (key^" : "^self#string_of_value value)::list_of_attributes;() ) in
 		Hashtbl.iter f h;
-		String.concat ";" list_of_attributes in
+		String.concat ";" list_of_attributes
+	in
 
-		(* method that converts a tObject into string *)
-		let	string_of_tobject tobject =
-  		" nom: "^tobject._name^" type: "^tobject._class^" attributes: "^ string_of_attributes tobject.attributes
-			in
-		let list_of_objects = [] in
-		let g = fun key value -> ("ref: "^string_of_int key^" object: "^string_of_tobject value)::list_of_objects;() in
-		Hashtbl.iter g tas;
-		String.concat "\n" list_of_objects
+	(* method that converts a tObject into string *)
+	let	string_of_tobject tobject =
+		" nom: "^tobject._name^" type: "^tobject._class^" attributes: "^ (string_of_attributes tobject.attributes)
+		in
 
+	let list_of_objects = [] in
+	let g = (fun key value -> ("ref: "^string_of_int key^" object: "^string_of_tobject value)::list_of_objects;()) in
 
+	Hashtbl.iter g tas;
+	String.concat "\n" list_of_objects ;
 
+method string_of_local_scope =
+ 	let list_var_in_local_scope = [] in
+	let f = (fun key (value:scope_Hashtbl_contenant) ->
+				("Variable "^key^"has value"^ (self#string_of_value (value._value)))::list_var_in_local_scope;() ) in
+	Hashtbl.iter f self#local_scope ;
+	String.concat "\n" list_var_in_local_scope ;
 
-  end
+end
