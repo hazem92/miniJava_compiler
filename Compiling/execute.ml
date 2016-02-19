@@ -10,6 +10,7 @@ let rec gather_toplevel l env = match l with
 	| _ ::tl -> gather_toplevel tl env
 	| [] -> ()
 
+let execute_method
 (* get infix_op *)
 let get_infix_op op x y =
   match op, x, y with
@@ -127,13 +128,12 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
   (*case New*)
   | New (None,n,al) -> (
     let name = List.nth n ((List.length n) -1) in
-    if not (Hashtbl.mem (env.classes) name ) then
+    if not (Hashtbl.mem (env#get_classes) name ) then
       raise (RunTimeError ("this Class "^name^" was not defined")) ;
-    let c = Hashtbl.find env.classes name in
+    let c = Hashtbl.find env#get_classes name in
     let attrs = c.def_attributes in
     let attributes:(string,Environement.value) Hashtbl.t= Hashtbl.create 0 in
-    let f = fun x y -> Hashtbl.add x (eval y env)  in
+    let f = fun x y -> Hashtbl.add attributes x (eval y.edesc env)  in
     Hashtbl.iter f attrs;
     let tob = {_name = "default";_class = name; attributes = attributes } in
-    Hashtbl.add env.tas ((Hashtbl.length env.tas) +1) tob
-    ClassValue ( Hashtbl.length env.tas ) )
+    ClassValue ( Hashtbl.length env#get_tas ) )
