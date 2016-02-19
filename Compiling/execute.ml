@@ -100,7 +100,7 @@ let get_assign_op op x y env =
 let rec eval (exp:expression_desc) (env:environement) = match exp with
 	(* case Val *)
 	| Val (v) -> ( match v with
-  	| String (s) -> IntValue (int_of_string s)
+  	| String (s) -> StringValue (s)
   	| Int (s) -> IntValue (int_of_string s)
   	| Float (s) -> FloatValue (float_of_string s)
   	| Char (s)  -> ( match s with
@@ -139,14 +139,32 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
 
 (* execute var declaration*)
 let eval_var_dec (t:Type.t) (n:string) (e:expression option) (env:environement) =
-  match e with
-    | None -> env#add_var_to_scope n ;
-    | Some ex -> (
-      env#add_var_to_scope n ;
-      let value = eval ex.edesc env in
-      (get_assign_op) Assign (Name n) value env ;
-      )
-
+  match t with
+    |Primitive (p) ->(
+      match e with
+        | None -> env#add_var_to_scope n ;
+        | Some ex -> (
+          env#add_var_to_scope n ;
+          let value = eval ex.edesc env in
+          (get_assign_op) Assign (Name n) value env ;
+          ))
+    |Ref (r) -> (
+      let name = r.tid in
+    if not (Hashtbl.mem (env#get_classes) name ) then
+      raise (RunTimeError ("this Class "^name^" was not defined")) ;
+    let c = Hashtbl.find env#get_classes name in
+    let attrs = c.def_attributes in
+    let attributes:(string,Environement.value) Hashtbl.t= Hashtbl.create 0 in
+    let f = (fun x y -> Hashtbl.add attributes x (eval y.edesc env))  in
+    Hashtbl.iter f attrs;
+    let tob = {_name = "default";_class = name; attributes = attributes } in
+    env#add_obj_in_tas tob;
+    env#add_var_to_scope n ;
+    env#update_var_in_local_scope n (ClassValue ( Hashtbl.length env#get_tas ));
+    match e with
+      |None -> ()
+      |Some exp -> (let value = eval exp.edesc env in
+      (get_assign_op) Assign (Name n) value env ;))
 (*execute statements*)
 let eval_statement (s:statement) (env:environement) =
   match s with

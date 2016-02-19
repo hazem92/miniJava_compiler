@@ -137,12 +137,12 @@ method update_att_in_tas (n:string) (s:string) (v:value) =
  											let obj_end = Hashtbl.find tas a in
  											obj_start.attributes <- obj_end.attributes
  									)
- 								| _ -> raise (RunTimeError ("something not cool happened"))
+ 								| _ -> raise (RunTimeError ("update_att_in_tas"))
 								)
 							| _ ->	Hashtbl.replace tmp_ob.attributes s v
            ) else (
             raise (RunTimeError ("this object "^n^" does not have attribute "^s))))
-     | _ -> raise (RunTimeError ("something not cool happened"))
+     | _ -> raise (RunTimeError ("update_att_in_tas"))
      )
   else (
     raise (RunTimeError ("this object "^n^" was not declared in this scope"))
@@ -157,7 +157,7 @@ method get_att_value_from_tas (n:string) (s:string)  =
         if (Hashtbl.mem tmp_ob.attributes s) then (
           	Hashtbl.find tmp_ob.attributes s  ) else (
             raise (RunTimeError ("this object "^n^" does not have attribute "^s))))
-     | _ -> raise (RunTimeError ("something not cool happened"))
+     | _ -> raise (RunTimeError ("get_att_value_from_tas"))
      )
   else (
     raise (RunTimeError ("this object "^n^" was not declared in this scope"))
@@ -172,7 +172,7 @@ method update_object_in_tas (s:string) (n:int) =
 			let obj_end = Hashtbl.find tas n in
 			obj_start.attributes <- obj_end.attributes
 			)
-		| _ -> raise (RunTimeError ("something not cool happened"))
+		| _ -> raise (RunTimeError ("update_object_in_tas"))
 		)
 		else (
 			raise (RunTimeError ("this object "^s^" was not declared in this scope")))
@@ -328,14 +328,13 @@ method update_object_in_tas (s:string) (n:int) =
 		in
 
 	let list_of_objects = Hashtbl.create 0 in
-	let g = fun key value -> Hashtbl.add list_of_objects 1 "ref: "^string_of_int key^" object: "^string_of_tobject value;() in
-
+	let g = (fun key value -> Hashtbl.add list_of_objects 1 ("ref: "^string_of_int key^" object: "^string_of_tobject value);()) in
 	Hashtbl.iter g tas;
 	String.concat "\n" (Hashtbl.find_all list_of_objects 1) ;
 
 method string_of_local_scope =
 	let list_var_in_local_scope = Hashtbl.create 0 in
-	let f = fun key (value:scope_Hashtbl_contenant) -> Hashtbl.add list_var_in_local_scope 1  (" Variable: "^key^" has value: "^ (self#string_of_value (value._value)));  in
+	let f = (fun key (value:scope_Hashtbl_contenant) -> Hashtbl.add list_var_in_local_scope 1  (" Variable: "^key^" has value: "^ (self#string_of_value (value._value))))  in
 	Hashtbl.iter f self#local_scope ;
 	String.concat ";" (Hashtbl.find_all list_var_in_local_scope 1);
 

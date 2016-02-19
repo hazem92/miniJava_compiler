@@ -9,15 +9,12 @@ package tuto;
  class Main {
    String main () {
 
-     Int ab = 2+2 ;
-     ab = (1+1) ;
-     ab = 5 ;
-     Int cb = 3 +5 ;
-     cb = (8+5) ;
-     ab = 8 ;
+     int ab = 2+2 ;
 
-     //B b = new B ()  ;
 
+     B b = new B () ;
+     b.a = (2+1);
+     b.a = b.b ;
 
 
    }
