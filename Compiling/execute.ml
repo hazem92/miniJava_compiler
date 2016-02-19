@@ -150,7 +150,7 @@ let eval_var_dec (t:Type.t) (n:string) (e:expression option) (env:environement) 
 (*execute statements*)
 let eval_statement (s:statement) (env:environement) =
   match s with
-    | Expr (exp) -> eval exp.edesc env ;(); 
+    | Expr (exp) -> eval exp.edesc env ;();
     | VarDecl (l) -> (
         let f = fun x -> (
           match x with
@@ -170,4 +170,6 @@ and execute_main_method (env:environement) =
   env#create_new_scope ;
   eval_statement_list main_method_body env ;
   print_int (Hashtbl.length env#get_tas) ;
+  if ((String.compare (env#string_of_local_scope) "") = 0 ) then (print_string "\n empty local scope" ;)
+    else print_string env#string_of_local_scope ;
   env#exit_scope ;

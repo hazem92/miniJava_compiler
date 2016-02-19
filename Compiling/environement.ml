@@ -60,7 +60,12 @@ method add_var_to_scope (v:string) =
 	if Hashtbl.mem self#local_scope v then
 		raise (RunTimeError ("Variable " ^v^ " already declared in this scope"))
 	else
-		Hashtbl.add self#local_scope v { _value = NoValue}
+		( let head = self#local_scope in
+			Hashtbl.add head v { _value = NoValue} ;
+			let tail = self#tail_scopes in
+			let new_scopes = head::tail in
+			scopes <- new_scopes ;
+		)
 method get_classes =
 	classes
 method get_tas =
@@ -70,6 +75,11 @@ method add_obj_in_tas (obj:tObject)=
 method local_scope =
   if ((List.length scopes) > 1) then
     List.hd scopes
+  else
+    raise (RunTimeError("Something went wrong with scopes"))
+method tail_scopes =
+  if ((List.length scopes) > 1) then
+    List.tl scopes
   else
     raise (RunTimeError("Something went wrong with scopes"))
 method clear_scopes =
