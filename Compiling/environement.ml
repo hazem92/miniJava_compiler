@@ -54,8 +54,13 @@ method set_main_class_env =
 method get_main_method_body =
  	let main = Hashtbl.find global_methodes "Main_main" in
 	print_string "main method in Main class found" ;
-	print_endline;
+	print_newline;
 	main.mbody
+method add_var_to_scope (v:string) =
+	if Hashtbl.mem self#local_scope v then
+		raise (RunTimeError ("Variable " ^v^ " already declared in this scope"))
+	else
+		Hashtbl.add self#local_scope v { _value = NoValue}
 method get_classes =
 	classes
 method get_tas =

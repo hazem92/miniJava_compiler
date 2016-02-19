@@ -137,10 +137,27 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
     let tob = {_name = "default";_class = name; attributes = attributes } in
     ClassValue ( Hashtbl.length env#get_tas ) )
 
+(* execute var declaration*)
+let eval_var_dec (t:Type.t) (n:string) (e:expression option) (env:environement) =
+  match e with
+    | None -> env#add_var_to_scope n ;
+    | Some ex -> (
+      env#add_var_to_scope n ;
+      let value = eval ex.edesc env in
+      (get_assign_op) Assign (Name n) value env ;
+      )
+
 (*execute statements*)
 let eval_statement (s:statement) (env:environement) =
   match s with
-    | Expr (exp) -> eval exp.edesc env
+    | Expr (exp) -> eval exp.edesc env ; 
+    | VarDecl (l) -> (
+        let f = fun x -> (
+          match x with
+            | (t:Type.t),(n:string),(e:expression option) -> eval_var_dec t n e env ;
+            | _ -> raise (RunTimeError ("can not instantiate "))
+          ) in
+        List.iter f l )
 
 let rec eval_statement_list l (env:environement) =
   match l with

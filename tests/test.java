@@ -6,7 +6,11 @@ package tuto;
 
  class Main {
    String main () {
-     B a =new B() ;
+     //String a =new String() ;
+     int a ;
+     a = 1 ;
+     a+1 ;
+     
 
 
    }
