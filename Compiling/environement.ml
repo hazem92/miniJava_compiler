@@ -306,9 +306,9 @@ method update_object_in_tas (s:string) (n:int) =
 		String.concat ";" list_of_attributes in
 
 		(* method that converts a tObject into string *)
-let	string_of_tobject tobject =
-  	" nom: "^tobject._name^" type: "^tobject._class^" attributes: "^ string_of_attributes tobject.attributes
-		in
+		let	string_of_tobject tobject =
+  		" nom: "^tobject._name^" type: "^tobject._class^" attributes: "^ string_of_attributes tobject.attributes
+			in
 		let list_of_objects = [] in
 		let g = fun key value -> ("ref: "^string_of_int key^" object: "^string_of_tobject value)::list_of_objects;() in
 		Hashtbl.iter g tas;
