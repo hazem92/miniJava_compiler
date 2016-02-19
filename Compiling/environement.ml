@@ -47,14 +47,21 @@ class environement =
 
 (* scopes are a list of Hashtbl*)
 val mutable scopes : ((string,scope_Hashtbl_contenant) Hashtbl.t) list = [Hashtbl.create 0] ;
-val main_class = {parent = "Object"; def_attributes = Hashtbl.create 0; def_methods = [] } ;
+val mutable main_class = {parent = "Object"; def_attributes = Hashtbl.create 0; def_methods = [] } ;
 
+method set_main_class_env =
+	main_class <- Hashtbl.find classes "Main"
+method get_main_method_body =
+ 	let main = Hashtbl.find global_methodes "Main_main" in
+	print_string "main method in Main class found" ;
+	print_endline;
+	main.mbody
 method get_classes =
 	classes
 method get_tas =
 	tas
 method add_obj_in_tas (obj:tObject)=
-	Hashtbl.add tas ((Hashtbl.length tas) +1) obj 
+	Hashtbl.add tas ((Hashtbl.length tas) +1) obj
 method local_scope =
   if ((List.length scopes) > 1) then
     List.hd scopes
@@ -160,10 +167,10 @@ method update_object_in_tas (s:string) (n:int) =
 
   method add_class (cl : asttype)  =  match cl.info with
   |Class classe ->
-    if ( not (Hashtbl.mem classes classe.cparent.tid)) then
+    (*if ( not (Hashtbl.mem classes classe.cparent.tid)) then
     raise (CompilingError ("The parent Class of " ^ cl.id ^ " is not known"));
     if (Hashtbl.mem classes cl.id) then
-    raise (CompilingError ("Class " ^ cl.id ^ " is already defined"));
+    raise (CompilingError ("Class " ^ cl.id ^ " is already defined")); *)
     let class_data = {parent = classe.cparent.tid; def_attributes = Hashtbl.create 0; def_methods = [] } in
 
       (*print_endline ("nom parent " ^ classe.cparent.tid) ;

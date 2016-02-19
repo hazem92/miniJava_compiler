@@ -27,3 +27,4 @@ let execute lexbuf verbose =
 		print_endline "----------";
 		let ctx = new Environement.environement in
 		Execute.gather_toplevel ast.type_list ctx;
+		Execute.execute_main_method ctx;

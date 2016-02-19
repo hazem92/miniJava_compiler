@@ -10,7 +10,6 @@ let rec gather_toplevel l env = match l with
 	| _ ::tl -> gather_toplevel tl env
 	| [] -> ()
 
-let execute_method
 (* get infix_op *)
 let get_infix_op op x y =
   match op, x, y with
@@ -137,3 +136,21 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
     Hashtbl.iter f attrs;
     let tob = {_name = "default";_class = name; attributes = attributes } in
     ClassValue ( Hashtbl.length env#get_tas ) )
+
+(*execute statements*)
+let eval_statement (s:statement) (env:environement) =
+  match s with
+    | Expr (exp) -> eval exp.edesc env
+
+let rec eval_statement_list l (env:environement) =
+  match l with
+    | [] -> () ;
+    | statement::l -> eval_statement statement env ; eval_statement_list l env;
+
+(* execute main method *)
+and execute_main_method (env:environement) =
+  let main_method_body = env#get_main_method_body in
+  env#create_new_scope ;
+  eval_statement_list main_method_body env ;
+  print_int (Hashtbl.length env#get_tas) ;
+  env#exit_scope ;
