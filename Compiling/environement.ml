@@ -316,10 +316,10 @@ method update_object_in_tas (s:string) (n:int) =
 	method  string_of_tas =
 	(* method that converts Hashtbl of attributes of a tObject into string *)
 	let string_of_attributes h =
- 		let list_of_attributes = [] in
-		let f = (fun key value -> (key^" : "^self#string_of_value value)::list_of_attributes;() ) in
+ 		let list_of_attributes = Hashtbl.create 0 in
+		let f = (fun key value -> Hashtbl.add list_of_attributes 1 (key^" : "^self#string_of_value value);() ) in
 		Hashtbl.iter f h;
-		String.concat ";" list_of_attributes
+		String.concat ";" (Hashtbl.find_all list_of_attributes 1)
 	in
 
 	(* method that converts a tObject into string *)
@@ -327,17 +327,17 @@ method update_object_in_tas (s:string) (n:int) =
 		" nom: "^tobject._name^" type: "^tobject._class^" attributes: "^ (string_of_attributes tobject.attributes)
 		in
 
-	let list_of_objects = [] in
-	let g = (fun key value -> ("ref: "^string_of_int key^" object: "^string_of_tobject value)::list_of_objects;()) in
+	let list_of_objects = Hashtbl.create 0 in
+	let g = fun key value -> Hashtbl.add list_of_objects 1 "ref: "^string_of_int key^" object: "^string_of_tobject value;() in
 
 	Hashtbl.iter g tas;
-	String.concat "\n" list_of_objects ;
+	String.concat "\n" (Hashtbl.find_all list_of_objects 1) ;
 
 method string_of_local_scope =
- 	let list_var_in_local_scope = ["nami";"namek"] in
-	(*let f = (fun key (value:scope_Hashtbl_contenant) ->
-				("Variable "^key^"has value"^ (self#string_of_value (value._value)))::list_var_in_local_scope;() ) in
-	Hashtbl.iter f self#local_scope ;*)
-	String.concat "\n" list_var_in_local_scope ;
+	let list_var_in_local_scope = Hashtbl.create 0 in
+	let f = fun key (value:scope_Hashtbl_contenant) -> Hashtbl.add list_var_in_local_scope 1  (" Variable: "^key^" has value: "^ (self#string_of_value (value._value)));  in
+	Hashtbl.iter f self#local_scope ;
+	String.concat ";" (Hashtbl.find_all list_var_in_local_scope 1);
+
 
 end
