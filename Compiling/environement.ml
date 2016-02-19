@@ -110,7 +110,12 @@ method add_arg_to_local_scope (a:argument) =
 
 method update_var_in_local_scope (s:string) (v:value) =
   if (Hashtbl.mem self#local_scope s) then (
-    Hashtbl.replace self#local_scope s {_value= v}  ) else (
+		let head = self#local_scope in
+		Hashtbl.replace head s { _value = v} ;
+		let tail = self#tail_scopes in
+		let new_scopes = head::tail in
+		scopes <- new_scopes ;
+		) else (
     raise (RunTimeError ("this variable "^s^" was not declared in this scope")) )
 
 method update_att_in_tas (n:string) (s:string) (v:value) =
@@ -329,10 +334,10 @@ method update_object_in_tas (s:string) (n:int) =
 	String.concat "\n" list_of_objects ;
 
 method string_of_local_scope =
- 	let list_var_in_local_scope = [] in
-	let f = (fun key (value:scope_Hashtbl_contenant) ->
+ 	let list_var_in_local_scope = ["nami";"namek"] in
+	(*let f = (fun key (value:scope_Hashtbl_contenant) ->
 				("Variable "^key^"has value"^ (self#string_of_value (value._value)))::list_var_in_local_scope;() ) in
-	Hashtbl.iter f self#local_scope ;
+	Hashtbl.iter f self#local_scope ;*)
 	String.concat "\n" list_var_in_local_scope ;
 
 end

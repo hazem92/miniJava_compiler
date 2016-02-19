@@ -8,9 +8,13 @@ package tuto;
 
  class Main {
    String main () {
-     //String a =new String() ;
-     Int a = 2+2 ;
-     a+1 ;
+
+     Int ab = 2+2 ;
+     ab = (1+1) ;
+     ab = 5 ;
+     Int cb = 3 +5 ;
+     cb = (8+5) ;
+     ab = 8 ;
 
      //B b = new B ()  ;
 
