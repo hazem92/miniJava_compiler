@@ -191,3 +191,20 @@ and execute_main_method (env:environement) =
   if ((String.compare (env#string_of_local_scope) "") < 0 ) then (print_string "\n empty local scope" ;)
     else print_string env#string_of_local_scope ;
   env#exit_scope ;
+
+and execute_method (ref_o) (n_m:string) (pl: value list) (env:environement) =
+  env#create_new_scope ;
+  let tob = env#get_obj_from_tas ref_o in
+  let cname = tob._class in
+  let m_body = env#get_method_body_from_gmethods cname n_m  in
+  let arg_list = m_body.margstype in
+  let scope = env#local_scope in
+  let f = (fun key value -> Hashtbl.add scope key.pident value) in
+  list.iter2 f arg_list pl ;
+  Hashtbl.add scope "this" ref_o ;
+  env#set_local_scope scope ;
+  eval_statement_list m_body env ;
+  print_int (Hashtbl.length env#get_tas) ;
+  if ((String.compare (env#string_of_local_scope) "") < 0 ) then (print_string "\n empty local scope" ;)
+    else print_string env#string_of_local_scope ;
+  env#exit_scope ;

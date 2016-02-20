@@ -28,7 +28,7 @@ type ttas = (int,tObject) Hashtbl.t
 class environement =
   object (self)
 
-  val global_methodes = Hashtbl.create 0 ;
+  val global_methodes:(string,method_data) Hashtbl.t = Hashtbl.create 0 ;
   val tas:ttas = Hashtbl.create 0;
   val  classes = (let c = Hashtbl.create 0 in
 
@@ -56,6 +56,10 @@ method get_main_method_body =
 	print_string "main method in Main class found" ;
 	print_newline;
 	main.mbody
+method get_method_body_from_gmethods (n_c:string) (n_m:string) =
+	let c = Hashtbl.find classes n_c in
+	if not (List.mem (n_c^"_"^n_m) c.def_methods) then (raise (RunTimeError ("Method" ^n_m^ " not declared in class"^n_c)))
+	Hashtbl.find global_methodes (n_c^"_"^n_m) ;
 method add_var_to_scope (v:string) =
 	if Hashtbl.mem self#local_scope v then
 		raise (RunTimeError ("Variable " ^v^ " already declared in this scope"))
@@ -72,11 +76,18 @@ method get_tas =
 	tas
 method add_obj_in_tas (obj:tObject)=
 	Hashtbl.add tas ((Hashtbl.length tas) +1) obj
+method get_obj_from_tas (_ref:int) =
+	Hashtbl.find tas _ref
 method local_scope =
   if ((List.length scopes) > 1) then
     List.hd scopes
   else
     raise (RunTimeError("Something went wrong with scopes"))
+method set_local_scope (scope) =
+	let tail= self#tail_scopes in
+	let new_scopes = scope :: tail in
+	scopes <- new_scopes
+
 method tail_scopes =
   if ((List.length scopes) > 1) then
     List.tl scopes
