@@ -63,7 +63,7 @@ type infix_op =
 type expression_desc =
   | New of string option * string list * expression list
   | NewArray of Type.t * (expression option) list * expression option
-  | Call of expression option * string * expression list
+  | Call of expression option * string * expression list (**)
   | Attr of expression * string (**)
   | If of expression * expression * expression
   | Val of value (**)
@@ -120,13 +120,13 @@ type astattribute = {
 type qualified_name = string list
 
 type statement =
-  | VarDecl of (Type.t * string * expression option) list
-  | Block of statement list
+  | VarDecl of (Type.t * string * expression option) list (**)
+  | Block of statement list (**)
   | Nop
   | While of expression * statement
   | For of (Type.t option * string * expression option) list * expression option * expression list * statement
   | If of expression * statement * statement option
-  | Return of expression option
+  | Return of expression option (**)
   | Throw of expression
   | Try of statement list * (argument * statement list) list * statement list
   | Expr of expression

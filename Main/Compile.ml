@@ -29,6 +29,6 @@ let execute lexbuf verbose =
 		Execute.gather_toplevel ast.type_list ctx;
 		print_endline "---- Execution ----*";
 		Execute.execute_main_method ctx;
-		print_endline "\n ---- TAS ----";
+		print_string "\n ---- TAS ---- \n";
 		if Hashtbl.length ctx#get_tas =0 then print_endline "empty tas" else
 		print_string ctx#string_of_tas;

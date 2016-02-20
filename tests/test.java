@@ -3,7 +3,10 @@ package tuto;
  class B {
   int a = 0;
   int b = 0 ;
-  String r (int a, String b)  {}
+  String r (int c, String b)  {
+    a = c ;
+    return (a+100) ;
+  }
 }
 
  class Main {
@@ -15,6 +18,7 @@ package tuto;
      B b = new B () ;
      b.a = (2+1);
      b.a = b.b ;
+     b.b = b.r(555," hh") ;
 
 
    }

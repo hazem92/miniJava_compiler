@@ -53,8 +53,6 @@ method set_main_class_env =
 	main_class <- Hashtbl.find classes "Main"
 method get_main_method_body =
  	let main = Hashtbl.find global_methodes "Main_main" in
-	print_string "main method in Main class found" ;
-	print_newline;
 	main.mbody
 method get_method_body_from_gmethods (n_c:string) (n_m:string) =
 	let c = Hashtbl.find classes n_c in
@@ -342,13 +340,13 @@ method update_object_in_tas (s:string) (n:int) =
 	let list_of_objects = Hashtbl.create 0 in
 	let g = (fun key value -> Hashtbl.add list_of_objects 1 ("ref: "^string_of_int key^" object: "^string_of_tobject value);()) in
 	Hashtbl.iter g tas;
-	String.concat "\n" (Hashtbl.find_all list_of_objects 1) ;
+	(String.concat "\n" (Hashtbl.find_all list_of_objects 1)) ^"\n";
 
 method string_of_local_scope =
 	let list_var_in_local_scope = Hashtbl.create 0 in
 	let f = (fun key (value:scope_Hashtbl_contenant) -> Hashtbl.add list_var_in_local_scope 1  (" Variable: "^key^" has value: "^ (self#string_of_value (value._value))))  in
 	Hashtbl.iter f self#local_scope ;
-	String.concat ";" (Hashtbl.find_all list_var_in_local_scope 1);
+	String.concat ";\n" (Hashtbl.find_all list_var_in_local_scope 1);
 
 
 end

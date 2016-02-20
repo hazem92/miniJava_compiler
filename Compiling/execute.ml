@@ -187,6 +187,15 @@ and eval_statement (s:statement) (env:environement) =
             | _ -> raise (RunTimeError ("can not instantiate "))
           ) in
         List.iter f l )
+    (*case Return*)
+    | Return e -> (
+      match e with
+        | None -> raise (RunTimeError ("return case not done yet "))
+        | Some e -> env#update_var_in_local_scope "return" (eval e.edesc env) ;
+      )
+    (*case Block*)
+    | Block l -> eval_statement_list l env ;
+
 
 and  eval_statement_list l (env:environement) =
   match l with
@@ -195,15 +204,17 @@ and  eval_statement_list l (env:environement) =
 
 (* execute main method *)
 and execute_main_method (env:environement) =
+  print_string "Execution main \n" ;
   let main_method_body = env#get_main_method_body in
   env#create_new_scope ;
   eval_statement_list main_method_body env ;
-  print_int (Hashtbl.length env#get_tas) ;
+  print_string "\n Heap of Main \n";
   if ((String.compare (env#string_of_local_scope) "") < 0 ) then (print_string "\n empty local scope" ;)
     else print_string env#string_of_local_scope ;
   env#exit_scope ;
 
 and execute_method (ref_ob:value) (n_m:string) (pl: value list) (env:environement) =
+  print_string "\nexecute method called \n";
   env#create_new_scope ;
   match ref_ob with
   | ClassValue (ref_o) -> (
@@ -215,9 +226,13 @@ and execute_method (ref_ob:value) (n_m:string) (pl: value list) (env:environemen
   let f = (fun key value -> Hashtbl.add scope key.pident {_value = value}) in
   List.iter2 f arg_list pl ;
   Hashtbl.add scope "this" {_value =ref_ob} ;
+  Hashtbl.add scope "return" {_value = NoValue} ;
   env#set_local_scope scope ;
   eval_statement_list m_body.mbody env ;
-  print_int (Hashtbl.length env#get_tas) ;
   if ((String.compare (env#string_of_local_scope) "") < 0 ) then (print_string "\n empty local scope" ;)
     else print_string env#string_of_local_scope ;
-  env#exit_scope ; IntValue 1; )
+  print_newline;
+  let return_value = (Hashtbl.find env#local_scope "return")._value in
+  print_string "\nend execution of method \n" ;
+  env#exit_scope ;
+  return_value ; )
