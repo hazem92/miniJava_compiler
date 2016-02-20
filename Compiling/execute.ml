@@ -149,7 +149,7 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
     )
 
 (* execute var declaration*)
-let eval_var_dec (t:Type.t) (n:string) (e:expression option) (env:environement) =
+and eval_var_dec (t:Type.t) (n:string) (e:expression option) (env:environement) =
   match t with
     |Primitive (p) ->(
       match e with
@@ -177,7 +177,7 @@ let eval_var_dec (t:Type.t) (n:string) (e:expression option) (env:environement) 
       |Some exp -> (let value = eval exp.edesc env in
       (get_assign_op) Assign (Name n) value env ;))
 (*execute statements*)
-let eval_statement (s:statement) (env:environement) =
+and eval_statement (s:statement) (env:environement) =
   match s with
     | Expr (exp) -> eval exp.edesc env ;();
     | VarDecl (l) -> (
@@ -188,7 +188,7 @@ let eval_statement (s:statement) (env:environement) =
           ) in
         List.iter f l )
 
-let rec eval_statement_list l (env:environement) =
+and  eval_statement_list l (env:environement) =
   match l with
     | [] -> () ;
     | statement::l -> eval_statement statement env ; eval_statement_list l env;
@@ -220,4 +220,4 @@ and execute_method (ref_ob:value) (n_m:string) (pl: value list) (env:environemen
   print_int (Hashtbl.length env#get_tas) ;
   if ((String.compare (env#string_of_local_scope) "") < 0 ) then (print_string "\n empty local scope" ;)
     else print_string env#string_of_local_scope ;
-  env#exit_scope ; )
+  env#exit_scope ; IntValue 1; )
