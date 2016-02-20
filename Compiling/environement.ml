@@ -58,8 +58,9 @@ method get_main_method_body =
 	main.mbody
 method get_method_body_from_gmethods (n_c:string) (n_m:string) =
 	let c = Hashtbl.find classes n_c in
-	if not (List.mem (n_c^"_"^n_m) c.def_methods) then (raise (RunTimeError ("Method" ^n_m^ " not declared in class"^n_c)))
-	Hashtbl.find global_methodes (n_c^"_"^n_m) ;
+	if not (List.mem (n_c^"_"^n_m) c.def_methods) then
+		(raise (RunTimeError ("Method" ^n_m^ " not declared in class"^n_c))) else (
+	Hashtbl.find global_methodes (n_c^"_"^n_m) ; )
 method add_var_to_scope (v:string) =
 	if Hashtbl.mem self#local_scope v then
 		raise (RunTimeError ("Variable " ^v^ " already declared in this scope"))

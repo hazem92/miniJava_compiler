@@ -135,7 +135,18 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
     let f = fun x y -> Hashtbl.add attributes x (eval y.edesc env)  in
     Hashtbl.iter f attrs;
     let tob = {_name = "default";_class = name; attributes = attributes } in
-    ClassValue ( Hashtbl.length env#get_tas ) )
+    ClassValue ( Hashtbl.length env#get_tas ) ;)
+  (*case call*)
+  | Call (e,m,al) -> (
+    match e with
+      |None -> raise (RunTimeError("not done yet")) ;
+      |Some (exp) -> (
+        let f = (fun x-> eval x.edesc env) in
+        let l = (List.map f al) in
+        let v = (eval exp.edesc env) in
+        execute_method v m l env ;
+        )
+    )
 
 (* execute var declaration*)
 let eval_var_dec (t:Type.t) (n:string) (e:expression option) (env:environement) =
@@ -192,19 +203,21 @@ and execute_main_method (env:environement) =
     else print_string env#string_of_local_scope ;
   env#exit_scope ;
 
-and execute_method (ref_o) (n_m:string) (pl: value list) (env:environement) =
+and execute_method (ref_ob:value) (n_m:string) (pl: value list) (env:environement) =
   env#create_new_scope ;
+  match ref_ob with
+  | ClassValue (ref_o) -> (
   let tob = env#get_obj_from_tas ref_o in
   let cname = tob._class in
-  let m_body = env#get_method_body_from_gmethods cname n_m  in
+  let m_body = env#get_method_body_from_gmethods cname n_m ; in
   let arg_list = m_body.margstype in
   let scope = env#local_scope in
-  let f = (fun key value -> Hashtbl.add scope key.pident value) in
-  list.iter2 f arg_list pl ;
-  Hashtbl.add scope "this" ref_o ;
+  let f = (fun key value -> Hashtbl.add scope key.pident {_value = value}) in
+  List.iter2 f arg_list pl ;
+  Hashtbl.add scope "this" {_value =ref_ob} ;
   env#set_local_scope scope ;
-  eval_statement_list m_body env ;
+  eval_statement_list m_body.mbody env ;
   print_int (Hashtbl.length env#get_tas) ;
   if ((String.compare (env#string_of_local_scope) "") < 0 ) then (print_string "\n empty local scope" ;)
     else print_string env#string_of_local_scope ;
-  env#exit_scope ;
+  env#exit_scope ; )
