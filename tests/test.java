@@ -4,8 +4,8 @@ package tuto;
   int a = 0;
   int b = 0 ;
   String r (int c, String b)  {
-    a = c ;
-    return (a+100) ;
+    this.a = c ;
+    return (this.a+100) ;
   }
 }
 
@@ -19,6 +19,8 @@ package tuto;
      b.a = (2+1);
      b.a = b.b ;
      b.b = b.r(555," hh") ;
+
+     if ( 1 == 1) ab = 88999999; else ab = 1; 
 
 
    }

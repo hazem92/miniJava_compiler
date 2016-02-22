@@ -147,6 +147,13 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
         execute_method v m l env ;
         )
     )
+  (*case if exp exp else exp *)
+  | If (e1,e2,e3) -> (
+    let condValue = (eval e1.edesc env) in
+    match condValue with
+      | BoolValue (true) -> eval e2.edesc env ;
+      | BoolValue (false) -> eval e3.edesc env ;
+    )
 
 (* execute var declaration*)
 and eval_var_dec (t:Type.t) (n:string) (e:expression option) (env:environement) =
@@ -195,6 +202,39 @@ and eval_statement (s:statement) (env:environement) =
       )
     (*case Block*)
     | Block l -> eval_statement_list l env ;
+    (*case If  *)
+    | If (e1,e2,e3) -> (
+      let condValue = (eval e1.edesc env) in
+      match e3 with
+        | None -> (
+          match condValue with
+            | BoolValue (true) -> eval_statement e2 env ;
+            | BoolValue (false) -> () ; )
+        | Some (e3) -> (
+          match condValue with
+            | BoolValue (true) -> eval_statement e2 env ;
+            | BoolValue (false) -> eval_statement e3 env ; )
+    )
+    (*for statement*)
+    | For
+    (*While case*)
+    | While (e,s) -> (
+      let condVal = (eval e.edesc env) in
+        let cond =
+        (match condVal with
+          | BoolValue (true) ->   true
+          | BoolValue (false) ->  false
+          ) in
+      while cond do
+        eval s env ;
+        let condVal = (eval e.edesc env)  in
+        let cond =
+        (match condVal with
+          | BoolValue (true) ->   true
+          | BoolValue (false) ->  false
+          ) in 
+      done
+      )
 
 
 and  eval_statement_list l (env:environement) =

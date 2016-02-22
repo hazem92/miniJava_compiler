@@ -125,11 +125,11 @@ type statement =
   | Nop
   | While of expression * statement
   | For of (Type.t option * string * expression option) list * expression option * expression list * statement
-  | If of expression * statement * statement option
+  | If of expression * statement * statement option (**)
   | Return of expression option (**)
   | Throw of expression
   | Try of statement list * (argument * statement list) list * statement list
-  | Expr of expression
+  | Expr of expression (**)
 
 type astmethod = {
     mutable mmodifiers : modifier list;
