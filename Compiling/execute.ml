@@ -216,25 +216,20 @@ and eval_statement (s:statement) (env:environement) =
             | BoolValue (false) -> eval_statement e3 env ; )
     )
     (*for statement*)
-    | For
+    (*| For *)
     (*While case*)
     | While (e,s) -> (
-      let condVal = (eval e.edesc env) in
-        let cond =
-        (match condVal with
-          | BoolValue (true) ->   true
-          | BoolValue (false) ->  false
-          ) in
-      while cond do
-        eval s env ;
-        let condVal = (eval e.edesc env)  in
-        let cond =
-        (match condVal with
-          | BoolValue (true) ->   true
-          | BoolValue (false) ->  false
-          ) in 
-      done
-      )
+    print_string " in while ";
+    let condition = eval e.edesc env in
+      let rec  f = (fun con st ->
+
+      (match con with
+        | BoolValue (true) -> eval_statement st env; f (eval e.edesc env) st;
+        | BoolValue (false) -> (); )
+        ) in
+       f condition s;
+       )
+
 
 
 and  eval_statement_list l (env:environement) =
