@@ -26,3 +26,4 @@ The Lexer/Parser is incomplete but should be ok for phase2. It contains two conf
 - a conflict between expression and declaration of variable in statements
 both could be solved at the price of a much more complex
 grammar... Here the behavior of choosing shift should be ok.
+test
