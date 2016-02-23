@@ -135,7 +135,13 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
     let f = fun x y -> Hashtbl.add attributes x (eval y.edesc env)  in
     Hashtbl.iter f attrs;
     let tob = {_name = "default";_class = name; attributes = attributes } in
-    ClassValue ( Hashtbl.length env#get_tas ) ;)
+    env#add_obj_in_tas tob;
+    let index = (Hashtbl.length env#get_tas) in
+    let vl = List.map (fun x -> eval x.edesc env) al in
+    execute_method (ClassValue (index)) (name^(string_of_int (List.length al))) vl env;
+    print_string " index : ";
+    print_int index;
+    ClassValue (index) ;)
   (*case call*)
   | Call (e,m,al) -> (
     match e with

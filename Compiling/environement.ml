@@ -57,7 +57,7 @@ method get_main_method_body =
 method get_method_body_from_gmethods (n_c:string) (n_m:string) =
 	let c = Hashtbl.find classes n_c in
 	if not (List.mem (n_c^"_"^n_m) c.def_methods) then
-		(raise (RunTimeError ("Method" ^n_m^ " not declared in class"^n_c))) else (
+		(raise (RunTimeError ("Method " ^n_m^ " not declared in class"^n_c))) else (
 	Hashtbl.find global_methodes (n_c^"_"^n_m) ; )
 method add_var_to_scope (v:string) =
 	if Hashtbl.mem self#local_scope v then
@@ -228,12 +228,12 @@ method update_object_in_tas (s:string) (n:int) =
 
 		(* Add  constructors of the class. The constructors should have the same name as the class distinct number of arguments.  *)
 		List.map
-    (fun x ->( if not (List.mem (x.cname^(string_of_int (List.length x.cargstype))) class_data.def_methods )
+    (fun x ->( if not (List.mem (cl.id^"_"^x.cname^(string_of_int (List.length x.cargstype))) class_data.def_methods )
 							 then (
 									if String.compare x.cname cl.id == 0
 									then (
 									let n = List.length x.cargstype in
-									(class_data.def_methods <- ((x.cname^(string_of_int n))::class_data.def_methods)))
+									(class_data.def_methods <- ((cl.id^"_"^x.cname^(string_of_int n))::class_data.def_methods)))
 									else
 									(raise (CompilingError("The method "^x.cname^ " has no return type. If you want to define it as a constructor, it must have the same name as the class  "))))
     					else
@@ -243,7 +243,7 @@ method update_object_in_tas (s:string) (n:int) =
 		List.map (fun x -> Hashtbl.add global_methodes (cl.id^"_"^x.mname) x ) classe.cmethods ;
 
 		(* Add constructors *)
-		List.map (fun x -> Hashtbl.add global_methodes ((x.cname)^(string_of_int (List.length x.cargstype))) {mmodifiers =x.cmodifiers ;mname=x.cname;mreturntype=Void;margstype=x.cargstype;mthrows=x.cthrows;mbody=x.cbody} ) classe.cconsts ;
+		List.map (fun x -> Hashtbl.add global_methodes ((cl.id^"_"^x.cname)^(string_of_int (List.length x.cargstype))) {mmodifiers =x.cmodifiers ;mname=x.cname;mreturntype=Void;margstype=x.cargstype;mthrows=x.cthrows;mbody=x.cbody} ) classe.cconsts ;
 
 
     let method_list = classe.cmethods in
