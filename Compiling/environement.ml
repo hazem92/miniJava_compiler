@@ -225,7 +225,26 @@ method update_object_in_tas (s:string) (n:int) =
     else
     (raise (CompilingError ("in the Class " ^ cl.id ^ " the method "^x.mname^" was declared more than one time")); ) ))
     classe.cmethods ;
-    List.map (fun x -> Hashtbl.add global_methodes (cl.id^"_"^x.mname) x ) classe.cmethods ;
+
+		(* Add  constructors of the class. The constructors should have the same name as the class distinct number of arguments.  *)
+		List.map
+    (fun x ->( if not (List.mem (x.cname^(string_of_int (List.length x.cargstype))) class_data.def_methods )
+							 then (
+									if String.compare x.cname cl.id == 0
+									then (
+									let n = List.length x.cargstype in
+									(class_data.def_methods <- ((x.cname^(string_of_int n))::class_data.def_methods)))
+									else
+									(raise (CompilingError("The method "^x.cname^ " has no return type. If you want to define it as a constructor, it must have the same name as the class  "))))
+    					else
+    				  (raise (CompilingError ("in the Class " ^ cl.id ^ " the contructor "^x.cname^" was declared more than one time with the same number of arguments")); ) ))
+    classe.cconsts ;
+
+		List.map (fun x -> Hashtbl.add global_methodes (cl.id^"_"^x.mname) x ) classe.cmethods ;
+
+		(* Add constructors *)
+		List.map (fun x -> Hashtbl.add global_methodes ((x.cname)^(string_of_int (List.length x.cargstype))) {mmodifiers =x.cmodifiers ;mname=x.cname;mreturntype=Void;margstype=x.cargstype;mthrows=x.cthrows;mbody=x.cbody} ) classe.cconsts ;
+
 
     let method_list = classe.cmethods in
     (* Extract the list of methods names from the list of the methods of the class &
@@ -275,10 +294,12 @@ method update_object_in_tas (s:string) (n:int) =
     in
     List.map verify_methods parent_class.def_methods;
 
-    (*let rec print_list = function
+    let rec print_list = function
     [] -> print_string cl.id ; print_endline ""
     | e::l -> print_string e ; print_endline "" ; print_list l
-    in*)
+    in
+		print_list  class_data.def_methods;
+
     let rec add_attributes =function
       | [] -> ()
       | att::l -> match att.adefault with
