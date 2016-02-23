@@ -178,10 +178,11 @@ method update_object_in_tas (s:string) (n:int) =
 		let tmp_s = Hashtbl.find self#local_scope s in
 		match tmp_s._value with
 		| ClassValue i -> (
-			let obj_start = Hashtbl.find tas n in
+			let obj_start = Hashtbl.find tas i in
 			let obj_end = Hashtbl.find tas n in
-			obj_start.attributes <- obj_end.attributes
-			)
+			obj_start.attributes <- obj_end.attributes;
+			print_string " done ";)
+
 		| _ -> raise (RunTimeError ("update_object_in_tas"))
 		)
 		else (
