@@ -257,6 +257,8 @@ and execute_main_method (env:environement) =
   print_string "Execution main \n" ;
   let main_method_body = env#get_main_method_body in
   env#create_new_scope ;
+  (*instantiate default class System in Main *)
+  eval_var_dec  (Ref {tpath=[];tid="System"}) "System_out" None env ;
   eval_statement_list main_method_body env ;
   print_string "\n Heap of Main \n";
   if ((String.compare (env#string_of_local_scope) "") < 0 ) then (print_string "\n empty local scope" ;)
