@@ -231,7 +231,55 @@ and eval_statement (s:statement) (env:environement) =
             | BoolValue (false) -> eval_statement e3 env ; )
     )
     (*for statement*)
-    (*| For *)
+    | For (counterList,e,el,s) -> (
+      let f = fun x -> (
+        match x with
+        | (t:Type.t option),(n:string),(exp:expression option) -> (
+        match t with
+          | None ->( match exp with
+              | None -> ()
+              | Some (ex) ->(
+                let value = eval ex.edesc env in
+                (get_assign_op) Assign (Name n) value env ;
+                ))
+          | Some (t) ->(
+            match t with
+              |Primitive (p) ->(
+                match exp with
+                  | None -> env#add_var_to_scope n ;
+                  | Some ex -> (
+                    env#add_var_to_scope n ;
+                    let value = eval ex.edesc env in
+                    (get_assign_op) Assign (Name n) value env ;
+                    ))
+              | _ ->  raise (RunTimeError ("iterating on objects in not done yet "))))
+        | _ -> raise (RunTimeError ("can not instantiate "))
+          (* let l = [t,s,exp] in eval_statement (VarDecl (l)) env; *)
+        )
+      in
+      List.iter f counterList;
+      match e with
+      | None -> ()
+      | Some (cond) -> (
+        let rec stat_list = function
+          | [] -> []
+          | ex::l -> Expr (ex)::stat_list l
+          in
+        let blockStatement = Block (s::stat_list el) in
+            eval_statement (While(cond,blockStatement)) env
+      );
+      (* Remove counters declared in For from local scope *)
+      let fr = fun x ->
+        (match x with
+        | (t:Type.t option),(n:string),(exp:expression option) ->(
+          match t with
+          |None -> ();
+          |Some t -> let local_scope = env#local_scope in Hashtbl.remove local_scope n; env#set_local_scope local_scope;
+          ))
+
+      in
+      List.iter fr counterList
+      )
     (*While case*)
     | While (e,s) -> (
     print_string " in while ";
