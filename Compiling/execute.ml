@@ -141,14 +141,25 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
     execute_method (ClassValue (index)) (name^(string_of_int (List.length al))) vl env;
     ClassValue (index) ;)
   (*case call*)
-  | Call (e,m,al) -> (
+    | Call (e,m,al) -> (
     match e with
-      |None -> raise (RunTimeError("not done yet")) ;
+      |None -> raise (RunTimeError("case call not done yet")) ;
       |Some (exp) -> (
-        let f = (fun x-> eval x.edesc env) in
-        let l = (List.map f al) in
-        let v = (eval exp.edesc env) in
-        execute_method v m l env ;
+        let o_ref = (eval exp.edesc env) in
+        match o_ref with
+        | ClassValue(_ref) -> (
+          let obj = env#get_obj_from_tas _ref in
+          let obj_t = obj._class in
+          let f = (fun x-> eval x.edesc env) in
+          let la = (List.map f al) in
+            match obj_t with
+            | "System" -> (
+                match m with
+                  | "print" -> env#system_print la ; NoValue;
+                );
+            | _ ->(execute_method o_ref m la env ;)
+        )
+        | _ -> raise (RunTimeError("Something bad in call happened")) ;
         )
     )
   (*case if exp exp else exp *)
