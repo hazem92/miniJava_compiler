@@ -41,6 +41,8 @@ class environement =
   Hashtbl.add c "Integer" integer_class;
   let boolean_class = {def_attributes = Hashtbl.create 0; def_methods =  ["Boolean_compare";"Boolean_toString"]; parent="Object"} in
   Hashtbl.add c "Boolean" boolean_class;
+  let system_class = {def_attributes = Hashtbl.create 0; def_methods =  ["System_print"]; parent="Object"} in
+  Hashtbl.add c "System" system_class;
   c;)
 
 (* begin Definition of scope and useful methods*)
@@ -190,6 +192,23 @@ method update_object_in_tas (s:string) (n:int) =
 
 (*end*)
 
+(*Definition of native methods*)
+
+(*method print of System*)
+method system_print (al:value list ) =
+	let system_print_unit = function
+		| IntValue(i) -> print_string "System print:  " ; print_int i ; print_string "\n" ;
+		| FloatValue(i) -> print_string "System print:  " ; print_string (string_of_float i) ; print_string "\n" ;
+		| BoolValue(i) -> print_string "System print:  " ; print_string (string_of_bool i) ; print_string "\n" ;
+		| CharValue(i) -> print_string "System print:  " ; print_string (Char.escaped i) ; print_string "\n" ;
+		| StringValue(i) -> print_string "System print:  " ; print_string i ; print_string "\n" ;
+		| _ -> print_string "**\n" ;
+	in
+	let rec f = function
+		| [] -> () ;
+		| v::l -> system_print_unit v ; f l ;
+	in
+	f al ;
 
 
 
