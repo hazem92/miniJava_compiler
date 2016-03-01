@@ -54,8 +54,10 @@ val mutable main_class = {parent = "Object"; def_attributes = Hashtbl.create 0; 
 method set_main_class_env =
 	main_class <- Hashtbl.find classes "Main"
 method get_main_method_body =
+	if (Hashtbl.mem global_methodes "Main_main") then (
  	let main = Hashtbl.find global_methodes "Main_main" in
-	main.mbody
+	main.mbody) else (
+		raise (RunTimeError ("Main not found")))
 method get_method_body_from_gmethods (n_c:string) (n_m:string) =
 	let c = Hashtbl.find classes n_c in
 	if not (List.mem (n_c^"_"^n_m) c.def_methods) then
@@ -318,7 +320,8 @@ method system_print (al:value list ) =
     [] -> print_string cl.id ; print_endline ""
     | e::l -> print_string e ; print_endline "" ; print_list l
     in
-		print_list  class_data.def_methods;
+		(*print class descriptor *)
+		(*print_list  class_data.def_methods;*)
 
     let rec add_attributes =function
       | [] -> ()
@@ -326,16 +329,16 @@ method system_print (al:value list ) =
         | Some e -> Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
         | None -> match att.atype with
             | Primitive(Int) ->
-              let e = { edesc = Val(Int("0"))} in
+              let e = { edesc = Val(Int("0")); etype =None} in
               Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
             | Primitive(Boolean) ->
-              let e = { edesc = Val(Boolean(false))} in
+              let e = { edesc = Val(Boolean(false)); etype =None} in
               Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
             | Primitive(Float) ->
-              let e = { edesc = Val(Float("0"))} in
+              let e = { edesc = Val(Float("0")); etype =None} in
               Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
             | Ref (ref) ->
-              let e = { edesc = Val(Null)} in
+              let e = { edesc = Val(Null); etype =None} in
               Hashtbl.add class_data.def_attributes att.aname  e;add_attributes l
             | _ -> raise (CompilingError ("Unrecognized type"))
     in

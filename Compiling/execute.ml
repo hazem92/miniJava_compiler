@@ -152,6 +152,8 @@ let rec eval (exp:expression_desc) (env:environement) = match exp with
           let obj_t = obj._class in
           let f = (fun x-> eval x.edesc env) in
           let la = (List.map f al) in
+            (* Depending on the mother class some calls will refer to a native code
+            not written in Java *)
             match obj_t with
             | "System" -> (
                 match m with

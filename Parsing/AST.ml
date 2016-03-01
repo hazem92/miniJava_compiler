@@ -80,13 +80,13 @@ type expression_desc =
   | ClassOf of Type.t
   | Instanceof of expression * Type.t
   | VoidClass
-  | QN of string list
 
 and expression =
     {
       edesc : expression_desc;
-(*      eloc : Location.t;
-      mutable etype : Type.t option;*)
+      mutable etype : Type.t option;
+
+      (*eloc : Location.t;*)
     }
 
 type switchLabel =
@@ -272,7 +272,6 @@ let rec string_of_expression_desc = function
      "{"^(ListII.concat_map "," string_of_expression el)^"}"
   | Cast(t,e) ->
       "("^(Type.stringOf t)^") "^(string_of_expression e)
-  | QN(sl) -> String.concat "." sl
   | Post(e,Incr) -> (string_of_expression e)^"++"
   | Post(e,Decr) -> (string_of_expression e)^"--"
   | Pre(op,e) -> (string_of_prefix_op op)^(string_of_expression e)
@@ -430,7 +429,7 @@ let print_package p =
   print_endline (String.concat "." p)
 
 let print_program p =
-  match p.package with
+  (match p.package with
   | None -> ()
-  | Some pack -> print_package pack ;
+  | Some pack -> print_package pack );
   List.iter (fun t -> print_type "" t; print_newline()) p.type_list

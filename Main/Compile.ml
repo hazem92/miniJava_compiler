@@ -20,15 +20,24 @@ let execute lexbuf verbose =
 
 let execute lexbuf verbose =
 	let ast = (compilationUnit Lexer.token lexbuf) in
+
+    print_endline "-----------typing--------";
+    let env = new TypeEnv.global_env in
+    TypeExec.typeOuter_program ast env;
+    TypeExec.typeInner_program ast env;
+    ASTType.type_program env ast;
+
 	(
 		if (verbose) then (
 			 (AST.print_program ast);
 		));
-		print_endline "----------";
-		let ctx = new Environement.environement in
-		Execute.gather_toplevel ast.type_list ctx;
-		print_endline "---- Execution ----*";
-		Execute.execute_main_method ctx;
-		print_string "\n ---- TAS ---- \n";
-		if Hashtbl.length ctx#get_tas =0 then print_endline "empty tas" else
-		print_string ctx#string_of_tas;
+
+  print_endline "----------";
+
+  let env = new Environement.environement in
+  Execute.gather_toplevel ast.type_list env;
+  print_endline "---- Execution ----*";
+  Execute.execute_main_method env;
+  print_string "\n ---- TAS ---- \n";
+  if Hashtbl.length env#get_tas =0 then print_endline "empty tas" else
+  print_string env#string_of_tas;
