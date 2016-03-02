@@ -18,19 +18,21 @@ let execute lexbuf verbose =
       Location.print l
 *)
 
-let execute lexbuf verbose =
+let execute lexbuf verbose execOnly=
+  
 	let ast = (compilationUnit Lexer.token lexbuf) in
-
+  if not(execOnly) then (
     print_endline "-----------typing--------";
     let env = new TypeEnv.global_env in
     TypeExec.typeOuter_program ast env;
     TypeExec.typeInner_program ast env;
     ASTType.type_program env ast;
-
+  );
 	(
 		if (verbose) then (
 			 (AST.print_program ast);
-		));
+		)
+  );
 
   print_endline "----------";
 

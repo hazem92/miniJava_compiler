@@ -10,16 +10,18 @@ let verify_parent t global_environement=
 
 let typer_type t global_environement=
   (match t.info with
-   | Class c -> print_endline("add class "^t.id); global_environement#add_class t ; 
+   | Class c ->  global_environement#add_class t ; 
    | Inter -> ())
     
-  
+  (*construire l'environnement global : on ajoute d'abord les classes pour garantir
+    la possibilité de définir les classes dans n'importe qu'elle ordre (permettre d'heriter une 
+    classe définie après dans le fichier )*)
 let typeOuter_program p global_environement=
   (match p.package with
   | None -> global_environement#setpack ["none"]
   | Some pack -> global_environement#setpack pack);
-  List.iter (fun t -> typer_type t global_environement) p.type_list;
-  List.iter (fun t -> verify_parent t global_environement) p.type_list
+  List.iter (fun t -> typer_type t global_environement) p.type_list; (*ajouter d'abord les classes*)
+  List.iter (fun t -> verify_parent t global_environement) p.type_list (*verifier les parents*)
 
   
 
@@ -44,6 +46,7 @@ let typerInner_class t global_environement=
    | Class c -> typer_class t.id c global_environement;
    | Inter -> ())
  
+ (*construire l'environnement local de chaque classes *)
  let typeInner_program p global_environement = 
   List.iter (fun t -> typerInner_class t global_environement;  print_newline()) p.type_list;
   
